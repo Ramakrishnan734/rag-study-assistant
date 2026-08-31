@@ -37,11 +37,11 @@ def extract_pages(pdf_path: str) -> List[dict]:
 
     with fitz.open(pdf_path) as doc:
         for page_index in range(len(doc)):
-            page= page_index+1
+            page= doc[page_index]
             raw_text = page.get_text()
             cleaned= clean_text(raw_text)
 
-            if cleaned():
+            if cleaned:
                 pages.append({
                     "page_number":page_index+1,
                     "text":cleaned,
