@@ -357,3 +357,79 @@ Milestone 7 — Groq LLM Integration
 - Send retrieved chunks to Groq LLM as context
 - LLM reads context and generates a natural language answer
 - User gets a real answer with page citations
+## Milestone 7 — Groq LLM Integration
+**Date:** August 2026
+
+### What Was Implemented
+- Created `backend/app/rag/llm.py`
+- Two functions: `build_prompt()` and `get_answer()`
+- Connects to Groq LLM and generates answers from retrieved chunks
+- Tested successfully with test PDF
+
+### Files Changed
+- `backend/app/rag/llm.py` — new file
+- `backend/test_llm.py` — test script
+- `backend/.env` — updated GROQ_MODEL to openai/gpt-oss-20b
+
+### Architecture Decision
+Split into two functions following Single Responsibility:
+- `build_prompt()` — only builds the prompt string
+- `get_answer()` — only handles LLM communication
+
+### How It Works
+1. `build_prompt()` combines chunks and query into one prompt string
+2. Context is built from chunk text and page numbers
+3. Prompt instructs LLM to answer ONLY from context
+4. `get_answer()` sends prompt to Groq via client.chat.completions.create()
+5. Extracts answer from response.choices[0].message.content
+6. Returns answer as plain string
+
+### Key Concepts Learned
+- Prompt engineering — combining context + question into one string
+- RAG prompt pattern — "Answer using ONLY the context below"
+- Groq client — client.chat.completions.create()
+- messages format — role: "user", content: prompt
+- response.choices[0].message.content — extract answer text
+- Hallucination prevention — ONLY context instruction forces LLM to stay grounded
+- Model decommissioning — llama3-8b-8192 deprecated, switched to openai/gpt-oss-20b
+- Settings lowercase — pydantic settings uses lowercase field names
+
+### Why "Answer ONLY from context"?
+Without this instruction LLM uses its own training data:
+- Could be outdated or incorrect
+- Could hallucinate confident but wrong answers
+- Defeats the purpose of RAG
+
+With this instruction:
+- LLM answers strictly from uploaded document
+- Says "I don't know" when context is insufficient
+- Grounded, trustworthy answers ✅
+
+### Why Split build_prompt() and get_answer()?
+- build_prompt() can be tested independently
+- get_answer() can swap LLM provider without touching prompt logic
+- Each function has one clear job — Single Responsibility ✅
+
+### Problems Encountered
+1. Settings uppercase vs lowercase:
+   - settings.GROQ_API_KEY ❌ → settings.groq_api_key ✅
+   - Pydantic settings uses lowercase field names
+
+2. Model decommissioned:
+   - llama3-8b-8192 deprecated by Groq
+   - llama-3.1-8b-instant not found
+   - Solution: listed available models via API
+   - Switched to openai/gpt-oss-20b ✅
+
+### Test Performed
+Query: "What does page 1 introduce?"
+Output: "RAG systems." ✅
+
+LLM correctly answered from document context only.
+"I don't know" returned for questions outside context — correct behavior.
+
+### What Comes Next
+Milestone 8 — LangGraph Agent
+- Build an AI agent that orchestrates the RAG pipeline
+- State machine that manages: retrieve → answer → respond
+- LangGraph connects all milestones into one intelligent flow
