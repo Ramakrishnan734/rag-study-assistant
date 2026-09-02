@@ -1,10 +1,15 @@
 from typing import List
 from app.services.chroma_service import get_chroma_client, get_collection
 
-
 def ingest_chunks(chunks: List[dict]) -> None:
     client = get_chroma_client()
     collection = get_collection(client)
+
+    # Clear existing data before ingesting new document
+    existing = collection.get()
+    if existing["ids"]:
+        collection.delete(ids=existing["ids"])
+        print(f"Cleared {len(existing['ids'])} existing chunks from ChromaDB")
 
     ids        = [str(chunk["chunk_id"]) for chunk in chunks]
     documents  = [chunk["text"] for chunk in chunks]
@@ -17,6 +22,4 @@ def ingest_chunks(chunks: List[dict]) -> None:
         embeddings=embeddings,
         metadatas=metadatas
     )
-
     print(f"Stored {len(chunks)} chunks into ChromaDB")
-    
