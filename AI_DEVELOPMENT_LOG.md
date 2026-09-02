@@ -661,3 +661,66 @@ Milestone 11 — React Frontend
 - Connect frontend to FastAPI backend
 - Students can interact with their study materials via browser
 
+## Milestone 11 — React Frontend
+**Date:** September 2026
+
+### What Was Implemented
+- Set up React + Vite in `frontend/` folder
+- Built `frontend/src/App.jsx` with upload and chat sections
+- Connected frontend to FastAPI backend using fetch()
+- Upload section — selects PDF, sends to /upload, shows status
+- Chat section — types question, sends to /chat, shows answer and sources
+- Full stack working end to end in browser
+
+### Files Changed
+- `frontend/src/App.jsx` — new file
+
+### Architecture Decision
+Used Vite instead of Create React App because:
+- Faster dev server with Hot Module Replacement
+- Lighter and more modern tooling
+- Industry standard for new React projects in 2026
+
+### How It Works
+1. User selects a PDF file — stored in file state
+2. User clicks Upload — handleUpload() called
+3. File wrapped in FormData and sent via fetch() to POST /upload
+4. Status message updated with result
+5. User types question — stored in query state
+6. User clicks Ask — handleAsk() called
+7. Query sent as JSON via fetch() to POST /chat
+8. Answer and sources stored in state and displayed
+
+### Key Concepts Learned
+- useState — React hook to track changing values
+- fetch() — built-in browser function to call APIs
+- FormData — wraps files for multipart HTTP upload
+- JSON.stringify() — converts JS object to JSON string for fetch body
+- async/await — waits for fetch response before updating state
+- Conditional rendering — {answer && <p>{answer}</p>} only shows when answer exists
+- Two servers needed simultaneously — Vite (5173) and FastAPI (8000)
+
+### Why FormData for Upload?
+fetch() cannot send raw files directly.
+FormData wraps the file as multipart/form-data.
+FastAPI's UploadFile expects exactly this format.
+
+### Why JSON for Chat?
+/chat expects a JSON body { query: "..." }.
+fetch() needs Content-Type: application/json header.
+JSON.stringify() converts JS object to JSON string.
+
+### Test Performed
+Uploaded test.pdf → 2 chunks stored ✅
+Asked "What does page 1 introduce?"
+Answer: "Page 1 introduces RAG (Retrieval-Augmented Generation) systems 【Page 1】" ✅
+Sources displayed correctly with page numbers ✅
+
+### What Comes Next
+Milestone 12 — Final Polish & Deployment
+- Clean up UI styling
+- Deploy backend to Render/Railway
+- Deploy frontend to Vercel/Netlify
+- Share live URL
+
+
