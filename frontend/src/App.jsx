@@ -1,4 +1,5 @@
 import { useState } from "react"
+import "./App.css"
 
 function App() {
   const [file, setFile] = useState(null)
@@ -45,41 +46,70 @@ function App() {
     }
   }
 
+  const isError = (text) => text.startsWith("❌")
+
   return (
-    <div style={{ maxWidth: "700px", margin: "40px auto", padding: "0 20px", fontFamily: "sans-serif" }}>
-      <h1>RAG Study Assistant</h1>
-      <p>Upload a PDF and ask questions about it.</p>
+    <div className="container">
+      <div className="header">
+        <h1>AskMyPDF</h1>
+        <p>Upload a PDF and ask questions about it.</p>
+      </div>
 
       {/* Upload Section */}
-      <div style={{ marginTop: "30px" }}>
+      <div className="card">
         <h2>Upload PDF</h2>
-        <input type="file" accept=".pdf" onChange={(e) => setFile(e.target.files[0])} />
-        <button onClick={handleUpload}>Upload</button>
-        {status && <p>{status}</p>}
+        <div className="upload-row">
+          <label className="file-label">
+            Choose File
+            <input
+              className="file-input"
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+          </label>
+          <span className="file-name">
+            {file ? file.name : "no file selected"}
+          </span>
+          <button className="btn btn-primary" onClick={handleUpload}>
+            Upload
+          </button>
+        </div>
+        {status && (
+          <div className={`status ${isError(status) ? "error" : ""}`}>
+            {status}
+          </div>
+        )}
       </div>
 
       {/* Chat Section */}
-      <div style={{ marginTop: "40px" }}>
+      <div className="card">
         <h2>Ask a Question</h2>
         <input
+          className="input-field"
           type="text"
           placeholder="Type your question here..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+          onKeyDown={(e) => e.key === "Enter" && handleAsk()}
         />
-        <button onClick={handleAsk}>Ask</button>
+        <button className="btn btn-primary" onClick={handleAsk}>
+          Ask
+        </button>
 
         {answer && (
-          <div style={{ marginTop: "20px" }}>
-            <p><strong>Answer:</strong> {answer}</p>
+          <div className="answer-box">
+            <div className="answer-label">Answer</div>
+            <div className="answer-text">{answer}</div>
+
             {sources.length > 0 && (
-              <div style={{ marginTop: "10px" }}>
-                <strong>Sources:</strong>
+              <div className="sources">
+                <div className="sources-label">Sources</div>
                 {sources.map((s, i) => (
-                  <p key={i} style={{ color: "#888", fontSize: "13px" }}>
-                    Page {s.page_number}: {s.text}
-                  </p>
+                  <div key={i} className="source-item">
+                    <div className="page-tag">Page {s.page_number}</div>
+                    {s.text}
+                  </div>
                 ))}
               </div>
             )}
