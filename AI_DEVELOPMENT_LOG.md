@@ -738,3 +738,21 @@ Milestone 12 — Final Polish & Deployment
 ### Key decisions
 - Solid purple color for title instead of gradient (gradient caused text clipping)
 - App name: AskMyPDF — clean, descriptive, memorable
+
+## Milestone 13 — Testing
+
+### What was done
+- Installed pytest 9.1.1
+- Created backend/tests/ folder with 4 test files
+- 27 tests written and all passing
+
+### Test files
+- test_pdf_processor.py — 6 tests (clean_text, extract_pages)
+- test_chunker.py — 6 tests (chunk_pages)
+- test_embedder.py — 4 tests (embed_chunks, 384-dim embeddings)
+- test_retriever.py — 5 tests (retrieve_chunks, top_k, distance)
+- test_llm.py — 6 tests (build_prompt, get_answer)
+
+### Key learnings
+- Test should match actual function behaviour, not assumed behaviour
+- clean_text keeps single newlines — test was wrong initially, fixed to match reality
