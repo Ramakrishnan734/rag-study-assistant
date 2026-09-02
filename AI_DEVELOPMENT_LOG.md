@@ -525,4 +525,139 @@ Milestone 9 — Prompt Engineering
 - Add system message for better LLM behavior
 - Handle edge cases — no chunks found, empty query
 
+## Milestone 9 — Prompt Engineering
+**Date:** August 2026
+
+### What Was Implemented
+- Improved `backend/app/rag/llm.py`
+- Added dedicated SYSTEM_PROMPT constant
+- Split into system and user messages
+- Better answer format with page citations
+- Tested successfully with test PDF
+
+### Files Changed
+- `backend/app/rag/llm.py` — updated
+- `backend/test_llm.py` — test script
+
+### Architecture Decision
+Split prompt into system and user messages because:
+- System message sets LLM personality and rules once
+- User message contains only context and question
+- Cleaner separation = better focused answers
+- Industry standard pattern for LLM applications
+
+### How It Works
+1. SYSTEM_PROMPT defines who the LLM is and how it should behave
+2. build_prompt() builds user message with context and question
+3. get_answer() sends both messages to Groq
+4. LLM follows system rules while answering user question
+5. Returns answer with page citations
+
+### Key Concepts Learned
+- System prompt — sets LLM personality and rules
+- User message — contains context and question
+- Two message roles: system and user
+- system → AI instructions (how to behave)
+- user → human request (what to do)
+- SYSTEM_PROMPT as constant — reused across all calls
+- Page citations — LLM told to always cite page numbers
+- Hallucination prevention — "Never make up information"
+
+### Why Separate System and User Messages?
+
+Old approach — everything in one user message:
+"You are helpful... Context:... Question:..." → mixed and messy
+
+New approach — two separate messages:
+system: "You are an expert study assistant..."
+user: "Context:... Question:..."
+→ LLM treats them differently
+→ Rules in system, request in user
+→ Cleaner, more focused answers ✅
+
+### Before vs After
+
+Before: "Page 1 introduces RAG systems."
+After: "Page 1 introduces RAG (Retrieval-Augmented Generation)
+systems.【Page 1】"
+
+Improvements:
+
+Full name expanded ✅
+Page citation added ✅
+More professional tone ✅
+
+### What Comes Next
+Milestone 10 — FastAPI Routes
+- Build API endpoints for upload and chat
+- Frontend can now talk to our RAG pipeline
+- POST /upload — accepts PDF and ingests it
+- POST /chat — accepts question and returns answer
+
+## Milestone 10 — FastAPI Routes
+**Date:** September 2026
+
+### What Was Implemented
+- Created `backend/app/models/requests.py` — ChatRequest model
+- Created `backend/app/models/responses.py` — HealthResponse, UploadResponse, ChatResponse models
+- Created `backend/app/api/routes/health.py` — GET /health endpoint
+- Created `backend/app/api/routes/upload.py` — POST /upload endpoint
+- Created `backend/app/api/routes/chat.py` — POST /chat endpoint
+- Updated `backend/app/main.py` — registered all three routers
+
+### Files Changed
+- `backend/app/models/requests.py` — new file
+- `backend/app/models/responses.py` — new file
+- `backend/app/api/routes/health.py` — new file
+- `backend/app/api/routes/upload.py` — new file
+- `backend/app/api/routes/chat.py` — new file
+- `backend/app/main.py` — updated
+
+### Architecture Decision
+Split routes into separate files following Single Responsibility:
+- Each route file owns one group of endpoints
+- `main.py` only registers routers — no route logic inside it
+- Request and response models live in `models/` — separate from route logic
+
+### How It Works
+1. Client sends POST /upload with a PDF file
+2. FastAPI receives it as UploadFile — saved to tempfile
+3. Pipeline runs: extract_pages → chunk_pages → embed_chunks → ingest_chunks
+4. Tempfile deleted after processing — no wasted storage
+5. Client sends POST /chat with a query string
+6. LangGraph graph invoked — retrieve → generate
+7. Answer and sources returned as ChatResponse
+
+### Key Concepts Learned
+- APIRouter — mini router for one group of routes, registered in main.py
+- BaseModel — Pydantic class for request/response data shapes
+- BaseSettings vs BaseModel — config vs data shapes
+- UploadFile — FastAPI's special class for file uploads
+- tempfile — temporary file deleted after use, no storage waste
+- app.include_router() — registers a router into the main app
+- response_model — FastAPI validates and documents the response shape
+- Graph built at module level — built once, reused every request
+
+### Why tempfile?
+Once PDF is processed and stored in ChromaDB, the file is no longer needed.
+tempfile creates a temporary file that is deleted after processing.
+No storage wasted. No manual cleanup logic needed beyond finally block.
+
+### Why APIRouter instead of FastAPI?
+FastAPI() creates the whole application — done once in main.py.
+APIRouter() creates a mini router for one group of routes.
+Each file owns its routes. main.py stays clean and small.
+
+### Test Performed
+GET /health → {"status": "ok"} ✅
+POST /upload → {"message": "PDF uploaded and stored successfully", "chunks_stored": 2} ✅
+POST /chat → {"answer": "Page 1 introduces RAG systems [Page 1].", "sources": [...]} ✅
+
+Tested via Swagger UI at http://localhost:8000/docs
+
+### What Comes Next
+Milestone 11 — React Frontend
+- Build a simple React UI for uploading PDFs and asking questions
+- Connect frontend to FastAPI backend
+- Students can interact with their study materials via browser
 
