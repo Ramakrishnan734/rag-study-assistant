@@ -724,3 +724,17 @@ Milestone 12 — Final Polish & Deployment
 - Share live URL
 
 
+
+## Milestone 12 — UI Polish & Deployment Prep
+
+### What was done
+- Fixed `requirements.txt`: upgraded chromadb from 0.5.0 to 1.5.9, added langchain-text-splitters==0.2.1
+- Updated CORS in `main.py` to allow deployed frontend URL
+- Created `frontend/src/App.css` with dark modern styling
+- Rewrote `frontend/src/App.jsx` to use className instead of inline styles
+- Renamed app from "RAG Study Assistant" to "AskMyPDF"
+- Attempted Render deployment — failed due to pymupdf build issue on Python 3.14 (deferred)
+
+### Key decisions
+- Solid purple color for title instead of gradient (gradient caused text clipping)
+- App name: AskMyPDF — clean, descriptive, memorable
