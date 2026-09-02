@@ -433,3 +433,96 @@ Milestone 8 — LangGraph Agent
 - Build an AI agent that orchestrates the RAG pipeline
 - State machine that manages: retrieve → answer → respond
 - LangGraph connects all milestones into one intelligent flow
+
+## Milestone 8 — LangGraph Agent
+**Date:** August 2026
+
+### What Was Implemented
+- Created `backend/app/agents/state.py`
+- Created `backend/app/agents/nodes.py`
+- Created `backend/app/agents/rag_graph.py`
+- Full RAG pipeline orchestrated as a LangGraph agent
+- Tested successfully with test PDF
+
+### Files Changed
+- `backend/app/agents/state.py` — new file
+- `backend/app/agents/nodes.py` — new file
+- `backend/app/agents/rag_graph.py` — new file
+- `backend/test_graph.py` — test script
+
+### Architecture Decision
+Used LangGraph instead of simple function chaining because:
+- State management — data flows cleanly between nodes
+- Modular — each node has one job
+- Extensible — easy to add new nodes later
+- Production ready — handles errors gracefully
+
+### How It Works
+1. `state.py` defines RAGState with query, chunks, answer
+2. `nodes.py` defines retrieve_node and answer_node
+3. `rag_graph.py` connects nodes into a compiled graph
+4. graph.invoke() runs the entire pipeline with one call
+5. LangGraph merges each node's returned dict into state automatically
+
+### Graph Structure
+START
+↓
+retrieve node — calls retrieve_chunks()
+↓
+generate node — calls get_answer()
+↓
+END
+
+
+### Key Concepts Learned
+- StateGraph — LangGraph's main graph class
+- TypedDict — structured dictionary with defined fields
+- Nodes — modular steps in the graph
+- Edges — connections between nodes
+- END — marks where graph stops
+- set_entry_point() — defines first node to run
+- compile() — validates and locks graph before running
+- invoke() — runs the compiled graph with initial state
+- Partial state returns — nodes return only changed fields
+- LangGraph merges returned dict into existing state automatically
+
+### Why TypedDict for State?
+Regular dict allows any keys — silent bugs possible.
+TypedDict enforces structure — LangGraph validates fields.
+Each node knows exactly what to read and write. ✅
+
+### Why Nodes Return Partial State?
+Each node returns only what it changed:
+- retrieve_node returns {"chunks": chunks}
+- answer_node returns {"answer": answer}
+LangGraph merges automatically — no risk of overwriting other fields.
+
+### Problems Encountered
+1. Node named "answer" conflicts with state key "answer":
+   - ValueError: 'answer' is already being used as a state key
+   - Solution: renamed node from "answer" to "generate"
+   - Lesson: node names cannot match state key names
+
+2. Circular import in nodes.py:
+   - nodes.py accidentally imported from itself
+   - Solution: fixed import to point to state.py
+   - Lesson: always check import paths carefully
+
+3. File not saving correctly in editor:
+   - Old code persisted despite editing
+   - Solution: used cat > file << EOF to overwrite from terminal
+   - Lesson: verify file contents with cat after editing
+
+### Test Performed
+Query: "What does page 1 introduce?"
+Output: "Page 1 introduces RAG systems." ✅
+
+Full pipeline running through LangGraph agent successfully.
+
+### What Comes Next
+Milestone 9 — Prompt Engineering
+- Improve the prompt for better answers
+- Add system message for better LLM behavior
+- Handle edge cases — no chunks found, empty query
+
+
